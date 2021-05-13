@@ -66,6 +66,8 @@ router.post('/join', async (req, res)=> {
                 score: 0
             });
 
+            await roomModel.save();
+
             res.send({
                 score: 0
             });
