@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
+require('dotenv').config();
 const logger = require('../middleware/logger');
 const client = require('twilio')(
     process.env.TWILIO_ACCOUNT_SID,
@@ -9,18 +10,15 @@ const client = require('twilio')(
 const {Room} = require('../models/room');
 
 // gives the person going to perform the task randomly
-router.post('/performer' , (req, res)=>{
+router.post('/performer' , async (req, res)=>{
 
     const {error} = validatePerformer(req.body);
     if(error) return res.status(400).send({error: error.details[0].message});
 
-    let connectedParticipants = [];
+    let connectedParticipants = await client.video.rooms(req.body.room).participants.list({status: 'connected'})
+    
+    connectedParticipants = connectedParticipants.map((participant)=>participant.identity);
 
-    client.video.rooms(req.body.room)
-                .participants
-                .each({status: 'connected'}, (participant)=>{
-                    connectedParticipants.push(participant.identity)
-                });
     const randomParticipant = connectedParticipants[Math.floor(Math.random() * connectedParticipants.length)];
 
     res.send({participant: randomParticipant});
