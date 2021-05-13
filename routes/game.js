@@ -12,17 +12,33 @@ const {Room} = require('../models/room');
 // gives the person going to perform the task randomly
 router.post('/performer' , async (req, res)=>{
 
-    const {error} = validatePerformer(req.body);
-    if(error) return res.status(400).send({error: error.details[0].message});
+    try {
 
-    let connectedParticipants = await client.video.rooms(req.body.room).participants.list({status: 'connected'})
-    connectedParticipants = connectedParticipants.map((participant)=>participant.identity);
+        const {error} = validatePerformer(req.body);
+        if(error) return res.status(400).send({error: error.details[0].message});
 
-    if(connectedParticipants.length === 1) return res.status(400).send({error: "Find some friends to play with :)"});
-    
-    const randomParticipant = connectedParticipants[Math.floor(Math.random() * connectedParticipants.length)];
+        const room = await client.video.rooms(req.body.room).fetch();
 
-    res.send({participant: randomParticipant});
+        const roomModel = await Room.findOne({sid: room.sid});
+        if(!roomModel) return res.status(400).send({error:"Room not found in database"});
+
+        roomModel.gameOn = true;
+        await roomModel.save();
+
+        let connectedParticipants = await client.video.rooms(req.body.room).participants.list({status: 'connected'})
+        connectedParticipants = connectedParticipants.map((participant)=>participant.identity);
+
+        if(connectedParticipants.length === 1) return res.status(400).send({error: "Find some friends to play with :)"});
+        
+        const randomParticipant = connectedParticipants[Math.floor(Math.random() * connectedParticipants.length)];
+
+        res.send({participant: randomParticipant});
+    }
+
+    catch(err) {
+        logger.error(err.message, err);
+        return res.status(err.status).send({error:err.message});
+    }
 });
 
 // excluding person performing the task gives the task judge
@@ -51,11 +67,14 @@ router.post('/score_update', async (req, res)=>{
 
     // get room model from database
     const roomModel = await Room.findOne({sid: req.body.roomId});
-
+        if(!roomModel) return res.status(400).send({error:"Room not found in database"});
+    
     // get the performer from database
     const participant = roomModel.participants.find(participant=>{
         return participant.name === req.body.identity;
     });
+
+    // console.log(`1. ${participant}`);
 
     if(!participant) return res.status(400).send({error: "Unable to update score"});
 
@@ -63,24 +82,53 @@ router.post('/score_update', async (req, res)=>{
     const otherParticipants = roomModel.participants
                                     .filter((participant)=>participant.name !== req.body.identity);
     
+    // console.log(`2. ${otherParticipants}`);
+
     // update performer score
     if(req.body.score === 1)
-        participant.score +=1;
+        participant.score = participant.score + 1;
     
     otherParticipants.push(participant);
 
+    // console.log(`3. ${otherParticipants}`);
+
     roomModel.participants = otherParticipants;
+
+    // console.log(`4. ${roomModel}`);
 
     await roomModel.save();
 
     res.status(200).send("success");
                             
+});
+
+router.post('/spin_over', async (req, res)=>{
+
+    const {error} = validateSpinOver(req.body);
+    if(error) return res.status(400).send({error: error.details[0].message});
+
+    const roomModel = await Room.findOne({sid: req.body.roomId});
+        if(!roomModel) return res.status(400).send({error:"Room not found in database"});
+
+    roomModel.gameOn = false;
+    await roomModel.save();
+
+    res.status(200).send("success");
 })
 
 // validate performer POST request body
 const validatePerformer = (body)=>{
     const schema = Joi.object({
         room: Joi.string().min(3).max(128).required(),
+    });
+
+    return schema.validate(body);
+};
+
+// validate spin over POST request body
+const validateSpinOver = (body)=>{
+    const schema = Joi.object({
+        roomId: Joi.string().required(),
     });
 
     return schema.validate(body);
@@ -101,6 +149,7 @@ const validateScoreUpdated = (body)=>{
     const schema = Joi.object({
         roomId: Joi.string().required(),
         identity: Joi.string().min(3).max(128).required(),
+        score: Joi.number().required()
     });
 
     return schema.validate(body);

@@ -19,8 +19,8 @@ router.post('/join', async (req, res)=> {
     const {error} = validateJoin(req.body);
     if(error) return res.status(400).send({error: error.details[0].message});
 
-
     try {
+
         // Get room from twilio cloud
         const room = await client.video.rooms(req.body.room).fetch();
         
@@ -28,6 +28,19 @@ router.post('/join', async (req, res)=> {
         const roomModel = await Room.findOne({sid: room.sid});
         if(!roomModel) return res.status(400).send({error:"Room not found in database"});
 
+        // if game is on during joining
+        if(roomModel.gameOn) 
+        {
+            const connectedParticipants = await client.video.rooms(req.body.room).participants.list({status: 'connected'});
+            if(connectedParticipants.length === 0)
+            {
+                roomModel.gameOn = false;
+                await roomModel.save();
+            }
+            else
+                return res.status(403).send({error:"A game is going on in the room, please wait until it is finished and try again"});
+        }
+        
         // search if participant already exists in database
         const participant = roomModel.participants.find(participant=>{
             return participant.name === req.body.identity;
@@ -55,6 +68,7 @@ router.post('/join', async (req, res)=> {
             res.send({
                 score: participant.score
             });
+            // console.log(participant.score);
             
         }
         // for new participant(not in database)
@@ -113,7 +127,8 @@ router.post('/create', async (req, res)=> {
             participants: [{
                 name: req.body.identity,
                 score: 0,
-            }]
+            }],
+            gameOn: false
         });
 
         await roomModel.save();

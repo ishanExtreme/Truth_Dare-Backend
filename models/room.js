@@ -19,7 +19,13 @@ const RoomSchema = new mongoose.Schema({
     participants: [{
         name: String,
         score: Number,
-    }]
+    }],
+
+    gameOn: {
+        type: Boolean,
+        default: false,
+        required: true
+    }
 
 });
 
