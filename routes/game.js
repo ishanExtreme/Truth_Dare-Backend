@@ -16,9 +16,10 @@ router.post('/performer' , async (req, res)=>{
     if(error) return res.status(400).send({error: error.details[0].message});
 
     let connectedParticipants = await client.video.rooms(req.body.room).participants.list({status: 'connected'})
-    
     connectedParticipants = connectedParticipants.map((participant)=>participant.identity);
 
+    if(connectedParticipants.length === 1) return res.status(400).send({error: "Find some friends to play with :)"});
+    
     const randomParticipant = connectedParticipants[Math.floor(Math.random() * connectedParticipants.length)];
 
     res.send({participant: randomParticipant});
