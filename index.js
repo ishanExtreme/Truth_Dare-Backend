@@ -4,6 +4,8 @@ const app = express();
 
 // logging setup 
 require('./startup/logging')();
+// DB setup
+require('./startup/db')();
 // routes setup
 require('./startup/routes')(app);
 
