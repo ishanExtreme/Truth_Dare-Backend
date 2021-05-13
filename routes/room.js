@@ -132,7 +132,7 @@ const validate = (body)=>{
 // validate join POST request body
 const validateJoin = (body)=>{
     const schema = Joi.object({
-        room: Joi.string().required(),
+        room: Joi.string().min(3).max(128).required(),
         identity: Joi.string().min(4).max(128).required(),
 
     });
