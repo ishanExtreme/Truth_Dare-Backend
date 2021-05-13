@@ -58,8 +58,14 @@ router.post('/join', async (req, res)=> {
             
         }
         // for new participant(not in database)
+        // update the database to include new participant
         else
         {
+            roomModel.participants.push({
+                name: req.body.identity,
+                score: 0
+            });
+
             res.send({
                 score: 0
             });
