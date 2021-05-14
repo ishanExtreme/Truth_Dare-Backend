@@ -8,7 +8,7 @@ const logger = winston.createLogger({
   });
 
 //   logging to console for development enviroment
-if(process.env.NODE_ENV!='production')
+if(process.env.NODE_ENV!=='prod')
 {
     logger.add(new winston.transports.Console({
         format: winston.format.colorize(),
@@ -37,7 +37,7 @@ const options = {
 options.handleExceptions = true;
 
 // logging to logdna for production enviroment
-if(process.env.NODE_ENV=='production')
+if(process.env.NODE_ENV==='prod')
     logger.add(new logdnaWinston(options));
 
 
