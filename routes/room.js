@@ -110,11 +110,26 @@ router.post('/create', async (req, res)=> {
     if(error) return res.status(400).send({error: error.details[0].message});
 
     try{
+
+        let maxParticipants;
+        let type;
+        // go or group
+        if(process.env.ROOM === 'go')
+        {
+            maxParticipants = 2;
+            type = 'go';
+        } 
+        else
+        {
+            maxParticipants = 4;
+            type = 'group-small';
+        }
+
         // Create Room using twilio API
         const room = await client.video.rooms.create({
-            type: 'go', //group-small
+            type: type, //group-small
             uniqueName: req.body.room,
-            maxParticipants: 2,
+            maxParticipants: maxParticipants,
             recordParticipantsOnConnect: false,
             mediaRegion: "in1",
         });
