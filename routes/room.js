@@ -106,7 +106,7 @@ router.post('/join', async (req, res)=> {
 // callback after room completed
 router.post('/room-ended', async (req, res)=>{
 
-    logger.error(req);
+    // logger.error(req);
     // Get room model from database and delete it
     if(req.body.RoomStatus === "completed")
         await Room.remove({sid: req.body.RoomSid});
