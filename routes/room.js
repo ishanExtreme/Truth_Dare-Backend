@@ -104,9 +104,9 @@ router.post('/join', async (req, res)=> {
 // Method: POST
 // deletes room from database after a room is completed
 // callback after room completed
-router.post('/complete', async (req, res)=>{
+router.post('/room-ended', async (req, res)=>{
 
-    console.log("In");
+    console.log(req.body);
     // Get room model from database and delete it
     if(req.body.RoomStatus === "completed")
         await Room.remove({sid: req.body.RoomSid});
@@ -148,7 +148,7 @@ router.post('/create', async (req, res)=> {
             maxParticipants: maxParticipants,
             recordParticipantsOnConnect: false,
             mediaRegion: "in1",
-            statusCallback: process.env.URL+"/room/complete",
+            statusCallback: process.env.URL+"/room/room-ended",
             statusCallbackMethod: "POST"
         });
 
