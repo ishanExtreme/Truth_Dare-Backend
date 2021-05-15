@@ -108,7 +108,7 @@ router.post('/room-ended', async (req, res)=>{
 
     // Get room model from database and delete it
     if(req.body.RoomStatus === "completed")
-        await Room.remove({sid: req.body.RoomSid});
+        await Room.deleteOne({sid: req.body.RoomSid});
 
     res.status(200).send("success");
 
