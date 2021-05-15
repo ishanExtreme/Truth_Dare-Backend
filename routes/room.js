@@ -107,7 +107,7 @@ router.post('/join', async (req, res)=> {
 router.post('/complete', async (req, res)=>{
 
     // Get room model from database and delete it
-    await roomModel.remove({sid: req.body.RoomSid});
+    await Room.remove({sid: req.body.RoomSid});
 
     res.status(200).send("success");
 
