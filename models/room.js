@@ -4,13 +4,6 @@ const mongoose = require('mongoose');
 // Defining Room Schema
 const RoomSchema = new mongoose.Schema({
 
-    createdAt: {
-        type: Date,
-        // expires after 4 hrs from creation(14400)
-        expires: 14400,
-        default: Date.now()
-    },
-
     sid: {
         type: String,
         required: true
