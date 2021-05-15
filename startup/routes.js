@@ -6,7 +6,11 @@ const game = require('../routes/game');
 const error = require('../middleware/error');
 
 module.exports = (app)=>{
-    app.use(express.json());
+    
+    app.use(bodyParser.urlencoded({ extended: false }))
+
+    // parse application/json
+    app.use(bodyParser.json())
 
     // allow same origin(remove in prod env)
     
