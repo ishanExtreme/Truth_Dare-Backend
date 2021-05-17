@@ -127,16 +127,17 @@ router.post('/create', async (req, res)=> {
         let maxParticipants;
         let type;
         // go or group
-        if(process.env.ROOM === 'go')
+        if(req.body.roomSize === 2)
         {
-            maxParticipants = 2;
+            maxParticipants = req.body.roomSize;
             type = 'go';
         } 
         else
         {
-            maxParticipants = 4;
+            maxParticipants = req.body.roomSize;
             type = 'group-small';
         }
+
 
         // Create Room using twilio API
         const room = await client.video.rooms.create({
@@ -178,6 +179,7 @@ const validate = (body)=>{
     const schema = Joi.object({
         identity: Joi.string().min(4).max(128).required(),
         room: Joi.string().min(3).max(128).required(),
+        roomSize: Joi.number().min(2).max(4).required()
     });
 
     return schema.validate(body);
