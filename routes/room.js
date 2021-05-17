@@ -174,6 +174,18 @@ router.post('/create', async (req, res)=> {
     res.status(200).send("Success");
 });
 
+// complete a room
+router.post('/complete', async (req, res)=>{
+
+    const {error} = validateComplete(req.body);
+    if(error) return res.status(400).send({error: error.details[0].message});
+
+    await client.video.rooms(req.body.room).update({status: 'completed'});
+
+    return res.status(200).send("success");
+    
+})
+
 // validate create POST request body
 const validate = (body)=>{
     const schema = Joi.object({
@@ -183,7 +195,7 @@ const validate = (body)=>{
     });
 
     return schema.validate(body);
-}
+};
 
 // validate join POST request body
 const validateJoin = (body)=>{
@@ -191,6 +203,14 @@ const validateJoin = (body)=>{
         room: Joi.string().min(3).max(128).required(),
         identity: Joi.string().min(4).max(128).required(),
 
+    });
+
+    return schema.validate(body);
+};
+
+const validateComplete = (body)=>{
+    const schema = Joi.object({
+        room: Joi.string().min(3).max(128).required(),
     });
 
     return schema.validate(body);
