@@ -114,7 +114,27 @@ router.post('/spin_over', async (req, res)=>{
     await roomModel.save();
 
     res.status(200).send("success");
-})
+});
+
+router.post('/get_scores', async(req, res)=>{
+
+    const {error} = validateGetScore(req.body);
+    if(error) return res.status(400).send({error: error.details[0].message});
+
+    const roomModel = await Room.findOne({sid: req.body.roomId});
+
+    let scoresDict = {};
+    // makes a score dict for all the requested participants
+    roomModel.participants.filter((participant)=>{
+        return req.body.participants.includes(participant.name);
+    }).map((participant)=>{
+            scoresDict[participant.name] = participant.score;
+    });
+
+    // console.log(scoresDict);
+    res.send({scores: scoresDict});
+    // res.status(200).send("success");
+});
 
 // validate performer POST request body
 const validatePerformer = (body)=>{
@@ -154,5 +174,15 @@ const validateScoreUpdated = (body)=>{
 
     return schema.validate(body);
 };
+
+// validate get score POST request body
+const validateGetScore = (body)=>{
+    const schema = Joi.object({
+        participants: Joi.array().items(Joi.string()),
+        roomId: Joi.string().required(),
+    });
+
+    return schema.validate(body);
+}
 
 module.exports = router;
