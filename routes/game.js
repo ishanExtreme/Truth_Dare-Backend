@@ -202,7 +202,12 @@ router.post("/get_winners", async (req, res) => {
     await roomModel.save();
 
     res.send({ winners: winners });
-  } catch (err) {}
+  } 
+  catch (err) 
+  {
+    logger.error(err.message, err);
+    return res.status(err.status).send({ error: err.message });
+  }
 });
 
 // validate performer POST request body
