@@ -54,8 +54,9 @@ PORT<br>
 NODE_ENV=development/prod<br>
 LOG_KEY(LogDNA key can be ignored for a "development" enviroment)<br>
 DB_URL(mongo db URL)<br>
-URL=http://localhost:"PORT"/api
-> To start the server run the following command when in the root directory
+URL=http://localhost:"PORT"/api<br>
+
+> To start the server run the following command when in the root directory:
 
     npm start
 
